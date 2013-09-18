@@ -11,6 +11,7 @@
 
 @interface ViewController : UIViewController{
     CGPoint beginCenter;
+    CGSize beginSize;
 }
 @property (strong, nonatomic) IBOutlet DPBlurredView *blurredView;
 @property (strong, nonatomic) IBOutlet UISlider *sl_radius;

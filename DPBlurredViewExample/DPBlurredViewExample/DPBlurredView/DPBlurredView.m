@@ -14,13 +14,19 @@
 
 //starting timer for blurring
 -(void)startBlurring{
+    UIImageView *blurringImageView = [[UIImageView alloc] initWithFrame:self.bounds];
+    blurringImageView.tag = 2606;
+    blurringImageView.contentMode = UIViewContentModeScaleToFill;
+    blurringImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [self insertSubview:blurringImageView atIndex:0];
     //fix FPS for blurring
     if(_blurringFPS <= 0) _blurringFPS = 30;
     timerForBlurring = [NSTimer scheduledTimerWithTimeInterval:1/_blurringFPS target:self selector:@selector(timerLoop) userInfo:nil repeats:YES];
 }
 
-//stopping timer for blurring (freeze background color)
+//stopping timer for blurring
 -(void)stopBlurring{
+    [[self viewWithTag:2606] removeFromSuperview];
     [timerForBlurring invalidate];
     timerForBlurring = nil;
 }
@@ -30,7 +36,8 @@
 -(void)timerLoop{
     UIImage *imageFromSuperview = [self imageFromSuperview];
     UIImage *blurredImage = [self blurredImageWithImage:imageFromSuperview andRadius:_blurringRadius tintColor:nil saturationDeltaFactor:1.8 maskImage:nil];
-    self.backgroundColor = [UIColor colorWithPatternImage:blurredImage];
+    self.backgroundColor = [UIColor clearColor];
+    [(UIImageView*)[self viewWithTag:2606] setImage:blurredImage];
 }
 
 -(UIImage*)imageFromSuperview{
@@ -39,7 +46,7 @@
     //hide our view before capturing superview
     self.hidden = YES;
     //capturing superview
-    UIGraphicsBeginImageContextWithOptions(rectSuperview.size, NO, 1.0);
+    UIGraphicsBeginImageContextWithOptions(rectSuperview.size, NO, 1.0/20);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, -rectSuperview.origin.x, -rectSuperview.origin.y);
     CALayer *layer = self.superview.layer;
@@ -48,7 +55,23 @@
     UIGraphicsEndImageContext();
     //show our view after capturing superview
     self.hidden = NO;
-    return image;
+    UIImage *scaledImage = [self scaleImage:image withRatio:0.1];
+    return scaledImage;
+}
+
+-(UIImage*)scaleImage:(UIImage*)image withRatio:(float) scaleRatio
+{
+    CGSize scaledSize = CGSizeMake(image.size.width * scaleRatio, image.size.height * scaleRatio);
+    UIGraphicsBeginImageContext(scaledSize);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    //Percent (101%)
+#define SCALE_OVER_A_BIT 1.01
+    //Scale.
+    CGContextScaleCTM(context, scaleRatio * SCALE_OVER_A_BIT, scaleRatio * SCALE_OVER_A_BIT);
+    [image drawAtPoint:CGPointZero];
+    UIImage *scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return scaledImage;
 }
 
 //Apple-based blurring method
