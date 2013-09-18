@@ -46,7 +46,7 @@
     //hide our view before capturing superview
     self.hidden = YES;
     //capturing superview
-    UIGraphicsBeginImageContextWithOptions(rectSuperview.size, NO, 1.0/20);
+    UIGraphicsBeginImageContextWithOptions(rectSuperview.size, YES, 1.0/20);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, -rectSuperview.origin.x, -rectSuperview.origin.y);
     CALayer *layer = self.superview.layer;
